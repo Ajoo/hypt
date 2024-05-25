@@ -274,7 +274,7 @@ class OrValue(Distribution):
         i = prng.uniform(size=size) > self.pvalue
         nonzero = self.distribution.sample(np.sum(i), seed=prng)
 
-        output = np.full(size, self.value, dtype=nonzero.dtype)
+        output = np.full(size, self.value, dtype=np.promote_types(nonzero.dtype, type(self.value)))
         output[i] = nonzero
         return output
 
