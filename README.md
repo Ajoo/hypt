@@ -5,6 +5,15 @@ Simple hyperparameter tuning in Python.
 * Not taking over your script. You own the training loop, `hypt` only provides parameter values to test and stays out of the way. Model training doesn't have to be relegated to some callback that you provide to an `optimize` function, making debugging mode annoying.
 * Having a small footprint, designed to be composable with other libraries rather than integrate them. `hypt` will not implement things like experiment tracking, results vizualization, parallelization, etc.. 
 
+## Installation
+
+`hypt` can be installed through pip:
+```
+pip install hypt
+```
+
+## Getting Started
+
 The following is an illustrative example of tuning the parameters of a GBDT model using random search:
 ```python
 import numpy as np
