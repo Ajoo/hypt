@@ -4,6 +4,8 @@ from typing import Union, Optional, Any
 from numpy.typing import ArrayLike
 from numpy.random import Generator
 
+from hypt.static import StaticParams
+
 Seed = Union[None, int, Generator]
 
 phi = (1 + np.sqrt(5))/2
@@ -11,12 +13,7 @@ phi = (1 + np.sqrt(5))/2
 
 @staticmethod
 def identity(x: Any):
-    return Any
-
-
-@staticmethod
-def fib(n: int):
-    return np.round((np.power(phi, n) - 1/np.power(-phi, n))/np.sqrt(5)).astype(np.int_)
+    return x
 
 
 def _log(x, base):
@@ -69,8 +66,7 @@ class UniformCategorical(Distribution):
 
     @sample_method
     def sample(self, size, prng):
-        i = prng.integers(len(self.values), size=size)
-        return self.values[i]
+        return prng.choice(self.values, size=size, replace=True)
 
 
 class DiscreteNumericalDistribution(Distribution):
@@ -115,19 +111,6 @@ class UniformInt(DiscreteNumericalDistribution):
     @staticmethod
     def from_domain(start: int, stop: Optional[int] = None):
         return UniformInt(start, stop)
-
-
-class UniformFibonacci(DiscreteNumericalDistribution):
-    """Uniform distribution on the Fibonacci Sequence.
-
-    The domain of the uniform distribution is:
-        {fibonacci(i): i in [start, stop[}
-
-    Args:
-        start (int): Starting Fibonacci index.
-        stop (int): Stopping Fibonacci index.
-    """
-    sequence = fib
 
 
 class UniformPower(DiscreteNumericalDistribution):
@@ -202,7 +185,7 @@ class Uniform(StaticInverseMixin, ContinuousNumericalDistribution):
     inverse_function = identity
 
 
-class LogUniform(StaticInverseMixin, ContinuousNumericalDistribution):
+class UniformLog(StaticInverseMixin, ContinuousNumericalDistribution):
     """Log-uniform distribution.
 
     Defines a log-uniform distribution over a bounded domain [exp(lb), exp(ub)].
@@ -217,7 +200,7 @@ class LogUniform(StaticInverseMixin, ContinuousNumericalDistribution):
     inverse_function = staticmethod(np.log)
 
 
-class LogUniformInt(LogUniform):
+class UniformIntLog(UniformLog):
     """Distribution for the floor of a Log-Uniform random variable.
 
     Distribution for floor(L) where L is a log-uniform distribution over a bounded 
@@ -234,6 +217,32 @@ class LogUniformInt(LogUniform):
     @staticmethod
     def function(x):
         return np.exp(x).astype(np.int_)
+
+
+# Alias
+def LogUniform(lb: float, ub: float):
+    """Log-uniform distribution.
+
+    Defines a log-uniform distribution over a bounded domain [lb, ub].
+
+    Args:
+        lb (float): Lower bound.
+        ub (float): Upper bound.
+    """
+    return UniformLog.from_domain(lb, ub)
+
+
+def IntLogUniform(lb: float, ub: float):
+    """Int Log-uniform distribution.
+
+    Defines a log-uniform distribution over a bounded domain [lb, ub].
+    After sampling, floor is taken to make the result an int.
+
+    Args:
+        lb (float): Lower bound.
+        ub (float): Upper bound.
+    """
+    return UniformIntLog.from_domain(lb, ub)
 
 
 # Mixture
@@ -278,3 +287,28 @@ class OrZero(OrValue):
 
     def __init__(self, distribution: Distribution, prob_zero=0.5):
         super().__init__(distribution, 0, prob_zero)
+
+
+class ProductDistribution(Distribution):
+    """Product of marginal distributions.
+
+    Samples each parameter independently from its own distribution.
+
+    Args:
+        distributions (dict): dictionary where keys are parameter names and values are Distributions or fixed values.
+    """
+
+    def __init__(self, distributions: dict[str, Union[Distribution, Any]]):
+        self.distributions = distributions
+
+    @sample_method
+    def sample(self, size, prng):
+        dynamic = {}
+        static = {}
+        for name, distribution in self.distributions.items():
+            if isinstance(distribution, Distribution):
+                dynamic[name] = distribution.sample(size, prng)
+            else:
+                static[name] = distribution
+
+        return StaticParams(dynamic, static, size)
