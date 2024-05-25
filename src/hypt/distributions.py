@@ -6,13 +6,15 @@ from numpy.random import Generator
 
 from hypt.static import StaticParams
 
-Seed = Union[None, int, Generator]
-
-phi = (1 + np.sqrt(5))/2
+__all__ = [
+    'UniformCategorical', 'UniformInt', 'UniformPower',
+    'Uniform', 'UniformLog', 'UniformIntLog', 'LogUniform', 'IntLogUniform',
+    'OrValue', 'OrZero', 'ProductDistribution'
+]
 
 
 @staticmethod
-def identity(x: Any):
+def _identity(x: Any):
     return x
 
 
@@ -33,7 +35,10 @@ class Distribution(ABC):
         pass
 
 
-def sample_method(sampler):
+Seed = Union[None, int, Generator]
+
+
+def _sample_method(sampler):
     def sampler_with_default_prng(self, size: int, seed: Seed = None) -> ArrayLike:
         """Samples from distribution.
 
@@ -64,7 +69,7 @@ class UniformCategorical(Distribution):
     def __init__(self, values: ArrayLike):
         self.values = np.asarray(values)
 
-    @sample_method
+    @_sample_method
     def sample(self, size, prng):
         return prng.choice(self.values, size=size, replace=True)
 
@@ -85,13 +90,13 @@ class DiscreteNumericalDistribution(Distribution):
 
     def __init__(self, start: int, stop: Optional[int] = None):
         if stop is None:
-            start = 0
             stop = start
+            start = 0
 
         self.start = start
         self.stop = stop
 
-    @sample_method
+    @_sample_method
     def sample(self, size: int, prng: Generator):
         i = prng.integers(self.start, self.stop, size=size)
         return self.sequence(i)
@@ -106,7 +111,7 @@ class UniformInt(DiscreteNumericalDistribution):
         start (int): Starting index.
         stop (int): Stopping index (exclusive).
     """
-    sequence = identity
+    sequence = _identity
 
     @staticmethod
     def from_domain(start: int, stop: Optional[int] = None):
@@ -166,7 +171,7 @@ class ContinuousNumericalDistribution(Distribution):
         self.lb = lb
         self.ub = ub
 
-    @sample_method
+    @_sample_method
     def sample(self, size: int, prng: Generator):
         x = prng.uniform(self.lb, self.ub, size=size)
         return self.function(x)
@@ -181,8 +186,8 @@ class Uniform(StaticInverseMixin, ContinuousNumericalDistribution):
         lb (float): Lower bound.
         ub (float): Upper bound.
     """
-    function = identity
-    inverse_function = identity
+    function = _identity
+    inverse_function = _identity
 
 
 class UniformLog(StaticInverseMixin, ContinuousNumericalDistribution):
@@ -264,10 +269,10 @@ class OrValue(Distribution):
         self.value = value
         self.pvalue = prob_value
 
-    @sample_method
+    @_sample_method
     def sample(self, size, prng):
         i = prng.uniform(size=size) > self.pvalue
-        nonzero = self.distribution.sample(np.sum(i), prng=prng)
+        nonzero = self.distribution.sample(np.sum(i), seed=prng)
 
         output = np.full(size, self.value, dtype=nonzero.dtype)
         output[i] = nonzero
@@ -289,6 +294,9 @@ class OrZero(OrValue):
         super().__init__(distribution, 0, prob_zero)
 
 
+ParamsDistributions = dict[str, Union[Distribution, Any]]
+
+
 class ProductDistribution(Distribution):
     """Product of marginal distributions.
 
@@ -298,10 +306,10 @@ class ProductDistribution(Distribution):
         distributions (dict): dictionary where keys are parameter names and values are Distributions or fixed values.
     """
 
-    def __init__(self, distributions: dict[str, Union[Distribution, Any]]):
+    def __init__(self, distributions: ParamsDistributions):
         self.distributions = distributions
 
-    @sample_method
+    @_sample_method
     def sample(self, size, prng):
         dynamic = {}
         static = {}
@@ -312,3 +320,21 @@ class ProductDistribution(Distribution):
                 static[name] = distribution
 
         return StaticParams(dynamic, static, size)
+
+
+def RandomSearch(parameter_distributions: ParamsDistributions, size: int, seed: Seed = None) -> StaticParams:
+    """Samples parameters for a Random Search.
+
+    Samples each parameter from its own distribution as specified in `parameter_distributions`.
+
+    Args:
+        parameter_distributions (ParamsDistributions): Specification of per parameter distributions.
+            keys are parameter names and values are Distributions or fixed.
+        size (int): Number of samples.
+        seed (Seed, optional): Seed for the sampling. Can be an integer or a numpy Generator.
+
+    Returns:
+        StaticParams: Iterable over sampled parameters.
+    """
+
+    return ProductDistribution(parameter_distributions).sample(size, seed)
