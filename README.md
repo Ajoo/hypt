@@ -1,5 +1,5 @@
 # hypt
-Simple hyperparameter tuning in Python
+Simple hyperparameter tuning in Python.
 
 `hypt`'s design philosophy is:
 * Not taking over your script. You own the training loop, `hypt` only provides parameter values to test and stays out of the way. Model training doesn't have to be relegated to some callback that you provide to an `optimize` function, making debugging mode annoying.
@@ -38,7 +38,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 val_results = []
 test_results = []
 for hparam in tqdm(hparams): # progress bar
-    gbm = HistGradientBoostingRegressor(**hparam)
+    gbm = HistGradientBoostingRegressor(**hparam) # hparam is a simple dict
     gbm.fit(X_train, y_train)
 
     val_results.append(gbm.validation_score_.max())
@@ -67,13 +67,13 @@ Best params:
 Test r2 score: 0.8447968218784379
 ```
 
-For the moment, static strategies where all parameters can be generated a priori (`GridSearch` and `RandomSearch`) are implemented.
+For the moment, only static strategies where all parameters can be generated a priori (`GridSearch` and `RandomSearch`) are implemented.
 In the future we will also implement strategies that require incorporating feedback of function values to generate new test points like TPE and others.
 
 
 ## Parallelization
 
-In many instances parallelization over hyperparameter tuning trials is not helpful since the model training itself will already make use of multithreading or parallelism. However in cases where it doesn't, it is again trivial to integrate hypt with, for example, joblib when using a static strategy like `GridSearch` or `RandomSearch`:
+In many instances parallelization over hyperparameter tuning trials is not helpful since the model training itself will already make use of multithreading or parallelism. However in cases where it doesn't, it is again trivial to integrate `hypt` with, for example, `joblib` when using a static strategy like `GridSearch` or `RandomSearch`:
 
 ```python
 import numpy as np
