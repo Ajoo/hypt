@@ -2,8 +2,8 @@
 Simple hyperparameter tuning in Python.
 
 `hypt`'s design philosophy is:
-* Not taking over your script. You own the training loop, `hypt` only provides parameter values to test and stays out of the way. Model training doesn't have to be relegated to some callback that you provide to an `optimize` function, making debugging mode annoying.
-* Having a small footprint, designed to be composable with other libraries rather than integrate them. `hypt` will not implement things like experiment tracking, results vizualization, parallelization, etc.. 
+* `hypt` doesn't take over your script. You own the training loop, `hypt` only provides parameter values to test and stays out of the way. Model training doesn't have to be relegated to some callback that you provide to an `optimize` function, making debugging more cumbersome.
+* `hypt` will have a small footprint, designed to be composable with other libraries rather than integrate them. `hypt` will not implement things like experiment tracking, results vizualization, parallelization, etc.. 
 
 ## Installation
 
@@ -105,4 +105,4 @@ best = np.argmin(fvals)
 print(f'Best value found was {fvals[best]} at point {hparams[best]}')
 ```
 
-Note that this is of course not the best way to run grid search on such a simple function. It is only meant as an example.
+This is of course not the best way to run grid search on such a simple function. It is only meant as an example.
