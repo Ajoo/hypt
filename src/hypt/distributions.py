@@ -1,8 +1,9 @@
-import numpy as np
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Any
-from numpy.typing import ArrayLike
+from typing import Any, Optional, Union
+
+import numpy as np
 from numpy.random import Generator
+from numpy.typing import ArrayLike
 
 from hypt.static import StaticParams
 

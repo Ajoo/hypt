@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-import numpy as np
-
-from numpy.typing import ArrayLike
-from typing import Any, Optional, Union
 import warnings
+from typing import Any, Optional, Union
+
+import numpy as np
+from numpy.typing import ArrayLike
 
 _ParamStorage = dict[str, Any]
 
