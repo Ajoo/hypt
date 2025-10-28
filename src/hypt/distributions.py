@@ -95,7 +95,7 @@ class DiscreteNumericalDistribution(Distribution):
             start = 0
 
         self.start = start
-        self.stop = stop
+        self.stop = stop + 1
 
     @_sample_method
     def sample(self, size: int, prng: Generator):
