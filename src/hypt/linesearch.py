@@ -1,6 +1,7 @@
-from typing import Any
-from copy import copy
 import operator
+from copy import copy
+from numbers import Number
+from typing import Any, Callable
 
 import numpy as np
 
@@ -95,13 +96,26 @@ def in_log_space(search):
 
     
 class ForParam:
-    def __init__(self, generator_function, *args, **kwargs):
-        self.generator_function = generator_function
+    """Helper that adapts a generator-based search into an iterable with feedback.
+
+    Args:
+        generator_function (Callable): Generator factory implementing the search.
+        *args: Positional arguments forwarded to the generator factory.
+        **kwargs: Keyword arguments forwarded to the generator factory.
+   """
+
+    def __init__(self, generator_factory: Callable, *args, **kwargs):
+        self.generator_function = generator_factory
         self.args = args
         self.kwargs = kwargs
         
-    def feedback(self, val):
-        self.value = val
+    def feedback(self, value: Number) -> None:
+        """Provides feedback on the objective function value.
+
+        Args:
+            value (Number): Objective function value for the last parameter.
+        """
+        self.value = value
     
     def __next__(self):
         try:
@@ -121,6 +135,14 @@ class ForParam:
     
 
 class LineSearch(ForParam):
+    """Line-search with optional patience-based early stopping.
+
+    Args:
+        points: Iterable of candidate points to evaluate.
+        patience: Optional number of consecutive non-improving evaluations to tolerate.
+        direction: Optimization direction, either ``"min"`` or ``"max"``.
+    """
+
     def __init__(self, points, patience=None, direction='min'):
         if patience is None:
             return super().__init__(line_search, points, direction=direction)
@@ -129,6 +151,16 @@ class LineSearch(ForParam):
 
 
 class GoldenSearch(ForParam):
+    """Golden-section search that optionally operates in log space.
+
+    Args:
+        a: Lower bound of the search interval.
+        b: Upper bound of the search interval.
+        num_evals: Maximum number of function evaluations to perform. Defaults to 5.
+        log: Whether to run the search in log space.
+        direction: Optimization direction, either ``"min"`` or ``"max"``.
+    """
+
     def __init__(self, a, b, num_evals=5, log=False, direction='min'):
         generator = golden_search
         if log:
@@ -158,6 +190,39 @@ def nested_line_search(dynamic, prefix):
 
 
 class NestedLineSearch(ForParam):
+    """Defines a nested line-search.
+
+    Allows cleanly replacing the following nested search:
+
+    ```
+    for a in a_search:
+        for b in b_search:
+            l = f_obj({'a': a, 'b': b})
+            b_search.feedback(l)
+        a_search.feedback(b_search.best)
+    ```
+
+    with
+
+    ```
+    nested_search = NestedLineSearch({
+        a: a_search,
+        b: b_search
+    })
+
+    for p in nested_search:
+        nested_search.feedback(fobj(p))
+    ```
+
+    This works for any amount of nested searches with the best function value 
+    in an inner loop being passed along as the function value for the outer loop.
+
+    Args:
+        space (dict): Maps parameter names to single values (constants)
+            or single-dimensional search instances.
+            Nested loops are defined in the order that they appear in
+            this dictionary.
+    """
 
     def __init__(self, space: dict[str, Any]):
         self.static = {}
@@ -175,4 +240,3 @@ class NestedLineSearch(ForParam):
     @property
     def args(self):
         return list(self.dynamic.items()), copy(self.static)
-

@@ -72,7 +72,7 @@ class GridSearch(StaticParams):
         space (dict[str, Union[Any, ArrayLike]]): Values to try for each parameter.
 
     Returns:
-        StaticParams: Iterable over parameters.
+        Iterable over parameters.
     """
 
     def __init__(self, space: dict[str, Union[Any, ArrayLike]]):
