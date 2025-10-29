@@ -5,6 +5,13 @@ from typing import Any, Callable
 
 import numpy as np
 
+from hypt.protocol import DynamicSearch
+
+
+__all__ = [
+    'NestedLineSearch', 'LineSearch', 'GoldenSearch'
+]
+
 
 def line_search(points, direction='min'):
     if direction=='min':
@@ -169,6 +176,7 @@ class GoldenSearch(ForParam):
         return super().__init__(generator, a, b, num_evals=num_evals, direction=direction)
     
 
+# TODO: Generalize this so that I can arbitrarily nest searches
 def nested_line_search(dynamic, prefix):
     (k, points), *rest = dynamic
 
@@ -189,7 +197,7 @@ def nested_line_search(dynamic, prefix):
         return e.value
 
 
-class NestedLineSearch(ForParam):
+class NestedLineSearch(ForParam, DynamicSearch):
     """Defines a nested line-search.
 
     Allows cleanly replacing the following nested search:

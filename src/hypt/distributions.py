@@ -5,7 +5,7 @@ import numpy as np
 from numpy.random import Generator
 from numpy.typing import ArrayLike
 
-from hypt.static import StaticParams
+from hypt.protocol import StaticParams
 
 __all__ = [
     'UniformCategorical', 'UniformInt', 'UniformPower',
