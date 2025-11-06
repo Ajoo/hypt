@@ -23,7 +23,7 @@ class GridSearch(StaticParams):
         static = {k: v for k, v in space.items() if np.isscalar(v)}
         dynamic = {k: v for k, v in space.items() if not np.isscalar(v)}
         dynamic_values = [v.flatten()
-                          for v in np.meshgrid(*dynamic.values())]
+                          for v in np.meshgrid(*dynamic.values(), indexing='ij')]
         dynamic = dict(zip(dynamic.keys(), dynamic_values))
         size = dynamic_values[0].size
         super().__init__(dynamic, static, size)
