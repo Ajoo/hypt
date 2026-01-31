@@ -31,7 +31,7 @@ class Recorder(DynamicSearch):
             yield param
     
     def feedback(self, value):
-        self.values.append(value)
+        self.values[-1] = value
         return self.params_iterator.feedback(value)
     
     def to_pandas(self, with_values: bool = True, with_static: bool = False):
