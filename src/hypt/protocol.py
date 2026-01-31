@@ -1,5 +1,5 @@
 import warnings
-from typing import Protocol, FrozenSet, Optional, Any
+from typing import Any, FrozenSet, Optional, Protocol
 
 from numpy.typing import ArrayLike
 

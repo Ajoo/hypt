@@ -3,8 +3,8 @@ from typing import Any, Union
 import numpy as np
 from numpy.typing import ArrayLike
 
-from hypt.protocol import StaticParams
 from hypt.distributions import RandomSearch
+from hypt.protocol import StaticParams
 
 
 class GridSearch(StaticParams):

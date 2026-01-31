@@ -7,7 +7,6 @@ import numpy as np
 
 from hypt.protocol import DynamicSearch
 
-
 __all__ = [
     'NestedLineSearch', 'LineSearch', 'GoldenSearch'
 ]

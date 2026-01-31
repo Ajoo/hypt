@@ -1,6 +1,8 @@
 from collections import defaultdict
 from typing import ClassVar
 
+import numpy as np
+
 from hypt.protocol import DynamicSearch
 
 
@@ -48,3 +50,28 @@ class Recorder(DynamicSearch):
         for col, val in self.static.items():
             df[col] = val
         return df
+    
+    def best_value(self, direction='min'):
+        if direction.lower() == 'min':
+            return min(self.values)
+        elif direction.lower() == 'max':
+            return max(self.values)
+        raise ValueError(
+            f"Expected direction to be 'max' or 'min'. Got '{direction}'."
+        )
+    
+    def best_iteration(self, direction='min'):
+        if direction.lower() == 'min':
+            return np.argmin(self.values)
+        elif direction.lower() == 'max':
+            return np.argmax(self.values)
+        else:
+            raise ValueError(
+                f"Expected direction to be 'max' or 'min'. Got '{direction}'."
+            )
+    
+    def best_params(self, direction='min'):
+        best = self.best_iteration(direction=direction)
+        params = {k: v[best] for k, v in self.params.items()}
+        params.update(self.static)
+        return params
