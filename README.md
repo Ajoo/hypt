@@ -130,7 +130,7 @@ for hparam in tqdm(hparams): # progress bar
 
     # this is the main change as we need to provide feedback
     # (i.e., the function value) for the search procedure
-+   hparams.feedback(-val_results[-1])
+    hparams.feedback(-val_results[-1])
 
 # print best hparam and test score
 best = np.argmax(val_results)
@@ -155,7 +155,7 @@ Best params:
 Test r2 score: 0.8449648371371464
 ```
 
-As we can see, we obtained a similar test R^2 score and found similar hyperparameters in 1/3 of the time! Note that this speedup was only possible due to the early stopping in the line searches, allowing us to evaluate only the three smaller values of `max_leaf_nodes`. We also only evaluated the first two values of `min_samples_leaf` for each each value of `max_leaf_nodes`. A full equivalent grid search would have required evaluating 75 different hyperparameter configurations. 
+We obtained a similar test $R^2$ score and found similar hyperparameters in 1/3 of the time! Note that this speedup was only possible due to the early stopping in the line searches, allowing us to evaluate only the three smaller values of `max_leaf_nodes`. We also only evaluated the first two values of `min_samples_leaf` for each value of `max_leaf_nodes`. A full grid search would have required evaluating 75 different hyperparameter configurations. 
 
 
 ## Future Developments
