@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hypt"
+version = "0.1.0"
+dependencies = ["numpy"]
+requires-python = ">=3.9"
+authors = [{name = "João Bravo", email = "ajoo@outlook.pt"}]
+description = "Simple hyperparameter tuning in Python"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["hyperparameter tuning", "optimization"]
+
+[project.urls]
+Repository = "https://github.com/Ajoo/hypt"
+
+[tool.setuptools.packages.find]
+where = ["src"]
