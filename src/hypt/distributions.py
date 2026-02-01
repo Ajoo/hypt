@@ -1,10 +1,11 @@
-import numpy as np
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Any
-from numpy.typing import ArrayLike
-from numpy.random import Generator
+from typing import Any, Optional, Union
 
-from hypt.static import StaticParams
+import numpy as np
+from numpy.random import Generator
+from numpy.typing import ArrayLike
+
+from hypt.protocol import StaticParams
 
 __all__ = [
     'UniformCategorical', 'UniformInt', 'UniformPower',
@@ -85,7 +86,7 @@ class DiscreteNumericalDistribution(Distribution):
 
     Args:
         start (int): Starting index of the sequence.
-        stop (int): Stopping index of the sequence (exclusive).
+        stop (int): Stopping index of the sequence (inclusive).
     """
 
     def __init__(self, start: int, stop: Optional[int] = None):
@@ -94,7 +95,7 @@ class DiscreteNumericalDistribution(Distribution):
             start = 0
 
         self.start = start
-        self.stop = stop
+        self.stop = stop + 1
 
     @_sample_method
     def sample(self, size: int, prng: Generator):
@@ -109,7 +110,7 @@ class UniformInt(DiscreteNumericalDistribution):
 
     Args:
         start (int): Starting index.
-        stop (int): Stopping index (exclusive).
+        stop (int): Stopping index (inclusive).
     """
     sequence = _identity
 
@@ -247,7 +248,7 @@ def IntLogUniform(lb: float, ub: float):
         lb (float): Lower bound.
         ub (float): Upper bound.
     """
-    return UniformIntLog.from_domain(lb, ub)
+    return UniformIntLog.from_domain(lb, ub + 1)
 
 
 # Mixture
